@@ -1,0 +1,15 @@
+[build]
+steps = [
+  { name = "Install Dependencies", command = "npm install" },
+  { name = "Prisma generate", command = "npm run db:generate" },
+  { name = "Prisma generate", command = "npm run build" }
+]
+
+[start]
+command = "npm run start:prod"
+
+[env]
+NODE_ENV = "production"
+
+[packages]
+build = ["pkg-config", "libssl-dev"]

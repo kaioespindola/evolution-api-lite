@@ -177,13 +177,14 @@ export class WAMonitoringService {
 
   public async loadInstance() {
     try {
-      if (this.providerSession?.ENABLED) {
-        await this.loadInstancesFromProvider();
-      } else if (this.db.SAVE_DATA.INSTANCE) {
-        await this.loadInstancesFromDatabasePostgres();
-      } else if (this.redis.REDIS.ENABLED && this.redis.REDIS.SAVE_INSTANCES) {
-        await this.loadInstancesFromRedis();
-      }
+      await this.loadInstancesFromDatabasePostgres();
+      // if (this.providerSession?.ENABLED) {
+      //   await this.loadInstancesFromProvider();
+      // } else if (this.db.SAVE_DATA.INSTANCE) {
+      //   await this.loadInstancesFromDatabasePostgres();
+      // } else if (this.redis.REDIS.ENABLED && this.redis.REDIS.SAVE_INSTANCES) {
+      //   await this.loadInstancesFromRedis();
+      // }
     } catch (error) {
       this.logger.error(error);
     }
@@ -275,6 +276,8 @@ export class WAMonitoringService {
 
   private async loadInstancesFromDatabasePostgres() {
     const clientName = await this.configService.get<Database>('DATABASE').CONNECTION.CLIENT_NAME;
+
+    console.log(clientName, 'cliente aqui');
 
     const instances = await this.prismaRepository.instance.findMany({
       where: { clientName: clientName },
