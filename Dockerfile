@@ -1,36 +1,24 @@
-FROM node:20-alpine AS builder
+# Use the official Node.js 20 image as the base image
+FROM node:20
 
-RUN apk add git wget curl bash
+# Set the working directory inside the container
+WORKDIR /app
 
-WORKDIR /evolution
+# Copy package.json and package-lock.json (if available)
+COPY package*.json ./
 
-COPY ./package.json ./tsconfig.json ./
-RUN npm install --omit=dev
+# Install dependencies
+RUN npm install
 
-RUN rm -rf /var/cache/apk/*
+# Copy the rest of the application code
+COPY . .
 
-COPY ./src ./src
-COPY ./public ./public
-COPY ./prisma ./prisma
-COPY ./.env.example ./.env
-COPY ./runWithProvider.js ./
-COPY ./tsup.config.ts ./
-COPY ./Docker ./Docker
+RUN npm run db:generate
 
-RUN chmod +x ./Docker/scripts/* && dos2unix ./Docker/scripts/* && \
-    ./Docker/scripts/generate_database.sh && \
-    npm run build
+RUN npm run build
 
-FROM node:20-alpine AS final
+# Expose the port the app runs on
+EXPOSE 3333
 
-RUN apk add git wget curl bash
-
-WORKDIR /evolution
-
-COPY --from=builder /evolution ./
-
-ENV DOCKER_ENV=true
-
-EXPOSE 8080
-
-ENTRYPOINT ["/bin/bash", "-c", "npm run start:prod" ]
+# Command to server the application
+CMD ["npm", "run", "start:prod"]
